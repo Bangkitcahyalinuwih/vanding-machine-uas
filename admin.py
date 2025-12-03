@@ -5,6 +5,9 @@ from tkinter import BOTH, LEFT, Button, messagebox as mb
 import hashlib
 from tkinter.ttk import Label
 import mysql.connector
+import os
+
+folder = os.path.dirname(__file__)
 
 def GetConnection():
     return mysql.connector.connect(
@@ -18,29 +21,197 @@ def GetConnection():
 
 root = tk.Tk()
 root.title("Login Sistem")
-root.resizable(False, False)
+root.resizable(False, False) 
 root.eval('tk::PlaceWindow . center')
 
+
+# pop up edit
+def edit_barang(id, nama_lama, harga_lama, dashboard):
+    edit_popup = tk.Toplevel(dashboard)
+    edit_popup.title("Edit Barang")
+    edit_popup.geometry("300x200")
+    edit_popup.grab_set()
+
+    frData = tk.Frame(edit_popup, padx=10, pady=10)
+    frData.pack(fill='both', expand=True)
+
+    #tempat input nama
+    tk.Label(frData, text="Nama Barang Baru").grid(row=0, column=0, padx=5, pady=5, sticky='w')
+    nama_entry = tk.Entry(frData, width=30)
+    nama_entry.insert(0, nama_lama)
+    nama_entry.grid(row=0, column=1, padx=5, pady=5)
+
+    #tempat input harga
+    tk.Label(frData, text="Harga Baru").grid(row=1, column=0, padx=5, pady=5, sticky='w')
+    harga_entry = tk.Entry(frData, width=30)
+    harga_entry.insert(0, harga_lama)
+    harga_entry.grid(row=1, column=1, padx=5, pady=5)
+
+    #fungsi simpan
+    def simpan_barang():
+        nama_baru = nama_entry.get()
+        harga_baru = harga_entry.get()
+        
+        if not nama_baru or not harga_baru.isdigit:
+            mb.showwarning("input salah","nama dan harga tidak boleh kosong", parent=edit_popup)
+
+        try:
+            #update sql
+            conn = GetConnection()
+            cursor = conn.cursor()
+            query = "UPDATE barang SET nama=%s, harga=%s WHERE id=%s"
+            cursor.execute(query, (nama_baru, int(harga_baru), id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            mb.showinfo("Berhasil", "Data barang berhasil diperbarui.", parent=dashboard)
+            edit_popup.destroy()
+
+            dashboard.destroy()
+            menu_dashboard()
+
+        except mysql.connector.Error as err:
+            mb.showerror("Error DB", f"Gagal memperbarui data: {err}", parent=edit_popup)
+            
+    #tombol
+    frButton = tk.Frame(edit_popup)
+    frButton.pack(pady=10)
+    tk.Button(frButton, text="Simpan", command=simpan_barang).pack(side=tk.LEFT, padx=5)
+    tk.Button(frButton, text="Batal", command=edit_popup.destroy).pack(side=tk.LEFT, padx=5)
+                
+
 def menu_dashboard():
-     root.withdraw()
+    root.withdraw()
 
-     dashboard = tk.Toplevel(root)
-     dashboard.title("Dashboard")
-     dashboard.resizable(False, False)
+    conn = GetConnection()
+    query = "SELECT id, nama, harga, nama_file FROM barang"
+    cursor = conn.cursor()
+    cursor.execute(query)
+    items = cursor.fetchall()
+    cursor.close()
+    conn.close()
 
-     user_login = root.username_entry.get()
-     tk.Label(dashboard, text=f"Selamat datang, {user_login}!").pack(padx=20, pady=20)
-     tk.Label(dashboard, text="Anda berhasil Login").pack(padx=20, pady=10)
+    print(f"Jumlah item yang diambil dari DB: {len(items)}")
+    print(f"Data Item: {items}")
 
-     def logout():
+    dashboard = tk.Toplevel(root)
+    dashboard.title("Admin Page")
+    dashboard.geometry("600x800")
+
+    item_frame = tk.Frame(dashboard)
+    item_frame.pack(pady=10, padx=10, fill='x')
+
+    image_references = {} 
+
+    #memuat gambar
+    def layout_gambar(nama_file):
+        path = os.path.join(folder, "Pict", nama_file)
+        before = tk.PhotoImage(file=path)
+        after = before.subsample(5, 5)
+        return after
+    
+    row_num = 0
+
+     #memetakan nama barang ke nama file
+    # image_map = {
+    #     "air Mineral": "air.png",
+    #     "chitato": "chitato.png",
+    #     "pillows": "pillows.png",
+    #     "nescafe": "nescafe.png",
+    #     "Pepsi": "pepsi.png",
+    #     "chikibalss": "chikiballs.png", 
+    #     "fanta": "fanta.png",
+    #     "wallens": "walens.png", 
+    #     "cheetos": "cheetos.png"
+    # }
+     
+     #ambil data dari database
+    for item_id, nama_barang, harga_barang, file_gambar in items:
+
+         #ambil gambar
+        if file_gambar:
+            try :
+                img = layout_gambar(file_gambar) ##cek apakah file gambar ada
+            except tk.TclError as e:
+                print(f"Error loading image for {nama_barang}: {e}")
+                img = None
+            if img:
+                image_references[f"img_{item_id}"] = img
+                 
+                 #gambar
+                label_img = tk.Label(item_frame, image=img)
+                label_img.image = img
+                label_img.grid(row=row_num, column=0, padx=5, pady=5)
+                 
+                 #nama barang
+                label_nama = tk.Label(item_frame, text=nama_barang)
+                label_nama.grid(row=row_num, column=1, padx=5, pady=5)
+
+                 #harga barang
+                label_harga = tk.Label(item_frame, text=f"Rp {harga_barang:,}".replace(",", "."))
+                label_harga.grid(row=row_num, column=2, padx=5, pady=5)
+
+                 #tombol edit
+                btn_edit = tk.Button(item_frame, text="Edit", width=10, 
+                                 command=lambda id=item_id, nama=nama_barang, harga=harga_barang, dash=dashboard: edit_barang(id, nama, harga, dash))
+                btn_edit.grid(row=row_num, column=3, padx=10, pady=5)
+
+                row_num += 1
+
+    dashboard.image_references = image_references
+
+
+    #  label1 = tk.Label(dashboard, image=img_air)
+    #  Label.image = img_air
+    #  label1.grid(row=0,  padx=5, pady=5)
+
+    #  nama1 = tk.Label(dashboard, text="Air Mineral")
+    #  nama1.grid(row=0, column=1, padx=5, pady=5)
+    #  harga1 = tk.Label(dashboard, text="5000")
+    #  harga1.grid(row=1, column=1, padx=2, pady=2)
+
+    #  label2 = tk.Label(dashboard, image=img_nescafe)
+    #  label2.image = img_nescafe
+    #  label2.grid(row=2, padx=5, pady=5)
+
+    #  label3 = tk.Label(dashboard, image=img_pepsi)
+    #  label3.image = img_pepsi
+    #  label3.grid(row=3, padx=5, pady=5)
+
+    #  label4 = tk.Label(dashboard, image=img_pillows)
+    #  label4.image = img_pillows
+    #  label4.grid(row=4,  padx=5, pady=5)
+
+    #  label5 = tk.Label(dashboard, image=img_chikibalss)
+    #  label5.image = img_chikibalss
+    #  label5.grid(row=5,  padx=5, pady=5)
+
+    #  label6 = tk.Label(dashboard, image=img_chitato)
+    #  label6.image = img_chitato
+    #  label6.grid(row=6,  padx=5, pady=5)
+
+    #  label7 = tk.Label(dashboard, image=img_fanta)
+    #  label7.image = img_fanta
+    #  label7.grid(row=7,  padx=5, pady=5)
+
+    #  label8 = tk.Label(dashboard, image=img_wallens)
+    #  label8.image = img_wallens
+    #  label8.grid(row=8,  padx=5, pady=5)
+
+    #  label9 = tk.Label(dashboard, image=img_cheetos)
+    #  label9.image = img_cheetos
+    #  label9.grid(row=9,  padx=5, pady=5)
+
+    def logout():
          root.username_entry.delete(0, tk.END)
          root.password_entry.delete(0, tk.END)
          root.username_entry.focus_set()
          dashboard.destroy()
          root.deiconify()
          mb.showinfo("Logout", "Anda telah logout dari sistem", parent=root)
-     btn_logout = tk.Button(dashboard, text="Logout", command=logout)
-     btn_logout.pack(pady=10)
+    btn_logout = tk.Button(dashboard, text="Logout", command=logout)
+    btn_logout.pack(pady=10)
 
 
 def login():
