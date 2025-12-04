@@ -29,7 +29,7 @@ root.eval('tk::PlaceWindow . center')
 def edit_barang(id, nama_lama, harga_lama, dashboard):
     edit_popup = tk.Toplevel(dashboard)
     edit_popup.title("Edit Barang")
-    edit_popup.geometry("300x200")
+    edit_popup.geometry("300x300")
     edit_popup.grab_set()
 
     frData = tk.Frame(edit_popup, padx=10, pady=10)
@@ -97,12 +97,14 @@ def menu_dashboard():
 
     dashboard = tk.Toplevel(root)
     dashboard.title("Admin Page")
-    dashboard.geometry("600x800")
+    dashboard.geometry("600x850")
 
-    item_frame = tk.Frame(dashboard)
-    item_frame.pack(pady=10, padx=10, fill='x')
 
-    image_references = {} 
+
+
+    image_references = {}
+    items_per_page = 6
+    halaman_sekarang = [0] 
 
     #memuat gambar
     def layout_gambar(nama_file):
@@ -111,53 +113,102 @@ def menu_dashboard():
         after = before.subsample(5, 5)
         return after
     
-    row_num = 0
+    # row_num = 0
 
-     #memetakan nama barang ke nama file
-    # image_map = {
-    #     "air Mineral": "air.png",
-    #     "chitato": "chitato.png",
-    #     "pillows": "pillows.png",
-    #     "nescafe": "nescafe.png",
-    #     "Pepsi": "pepsi.png",
-    #     "chikibalss": "chikiballs.png", 
-    #     "fanta": "fanta.png",
-    #     "wallens": "walens.png", 
-    #     "cheetos": "cheetos.png"
-    # }
+    #frame untuk menampilkan barang
+    item_frame = tk.Frame(dashboard)
+    item_frame.pack(pady=10, padx=10, fill='x')
+
+    #frame untuk navigasi
+    nav_frame = tk.Frame(dashboard, bg="lightgray")
+    nav_frame.pack(fill="x", padx=10, pady=10)
+
+    label_page = tk.Label(nav_frame, text="PAGE")
+    label_page.grid(row=0, column=1, padx=10)
+
+    def tampilkan_halaman(nomor_halaman):
+        #hapus widget lama
+        for widget in item_frame.winfo_children():
+            widget.destroy()
+
+
+        #menghitung indeks
+        items_per_page = 6
+        indeks_awal = nomor_halaman * items_per_page
+        indeks_akhir = indeks_awal + items_per_page
+        halaman_items = items[indeks_awal:indeks_akhir]
+
+        #menghitung halaman
+        total_items = len(items)
+        total_halaman = (total_items + items_per_page - 1 ) // items_per_page
+
+        row_num = 0
+
+        # nama = tk.Label(text="Nama Barang")
+        # nama.grid(row=0, column=1, padx=5, pady=5)
+
+        # harga = tk.Label(text="Harga Barang")
+        # harga.grid(row=1, column=1, padx=5, pady=5)
      
-     #ambil data dari database
-    for item_id, nama_barang, harga_barang, file_gambar in items:
+        #menampilkan item
+        for item_id, nama_barang, harga_barang, file_gambar in halaman_items:
 
          #ambil gambar
-        if file_gambar:
-            try :
-                img = layout_gambar(file_gambar) ##cek apakah file gambar ada
-            except tk.TclError as e:
-                print(f"Error loading image for {nama_barang}: {e}")
-                img = None
-            if img:
-                image_references[f"img_{item_id}"] = img
+            if file_gambar:
+                try :
+                    img = layout_gambar(file_gambar) ##cek apakah file gambar ada
+                except tk.TclError as e:
+                    print(f"Error loading image for {nama_barang}: {e}")
+                    img = None
+                if img:
+                    image_references[f"img_{item_id}"] = img
                  
                  #gambar
-                label_img = tk.Label(item_frame, image=img)
-                label_img.image = img
-                label_img.grid(row=row_num, column=0, padx=5, pady=5)
+                    label_img = tk.Label(item_frame, image=img)
+                    label_img.image = img
+                    label_img.grid(row=row_num, column=0, padx=5, pady=5)
                  
                  #nama barang
-                label_nama = tk.Label(item_frame, text=nama_barang)
-                label_nama.grid(row=row_num, column=1, padx=5, pady=5)
+                    label_nama = tk.Label(item_frame, text=nama_barang)
+                    label_nama.grid(row=row_num, column=1, padx=5, pady=5)
 
                  #harga barang
-                label_harga = tk.Label(item_frame, text=f"Rp {harga_barang:,}".replace(",", "."))
-                label_harga.grid(row=row_num, column=2, padx=5, pady=5)
+                    label_harga = tk.Label(item_frame, text=f"Rp {harga_barang:,}".replace(",", "."))
+                    label_harga.grid(row=row_num, column=2, padx=5, pady=5)
 
                  #tombol edit
-                btn_edit = tk.Button(item_frame, text="Edit", width=10, 
+                    btn_edit = tk.Button(item_frame, text="Edit", width=10, 
                                  command=lambda id=item_id, nama=nama_barang, harga=harga_barang, dash=dashboard: edit_barang(id, nama, harga, dash))
-                btn_edit.grid(row=row_num, column=3, padx=10, pady=5)
+                    btn_edit.grid(row=row_num, column=3, padx=10, pady=5)
 
-                row_num += 1
+                    row_num += 1
+        # total_halaman
+        label_page.config(text=f"Halaman {nomor_halaman + 1} dari {total_halaman}")
+
+    def prev_halaman():
+        if halaman_sekarang[0] > 0:
+            halaman_sekarang[0] -= 1
+            tampilkan_halaman(halaman_sekarang[0])
+
+    def next_halaman():
+        total_items = len(items)
+        total_halaman = (total_items + items_per_page - 1) // items_per_page
+        if halaman_sekarang[0] < total_halaman - 1:
+            halaman_sekarang[0] += 1
+            tampilkan_halaman(halaman_sekarang[0])
+                
+    #tombol navigasi
+    btn_prev = tk.Button(nav_frame, text="<", command=prev_halaman)
+    btn_prev.grid(row=0, column=0, padx=10)
+
+    btn_next = tk.Button(nav_frame, text=">", command=next_halaman)
+    btn_next.grid(row=0, column=2, padx=10)
+
+    #agar berada di tengah
+    nav_frame.grid_columnconfigure(1, weight=1)
+
+    tampilkan_halaman(0)
+                
 
     dashboard.image_references = image_references
 
