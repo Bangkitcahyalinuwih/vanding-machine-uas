@@ -20,12 +20,6 @@ def GetConnection():
         port=3306
     )
 
-#root = tk.Tk()
-#root.title("Login Sistem")
-#root.resizable(False, False) 
-#root.eval('tk::PlaceWindow . center')
-
-
 # pop up edit
 def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
     edit_popup = tk.Toplevel(dashboard)
