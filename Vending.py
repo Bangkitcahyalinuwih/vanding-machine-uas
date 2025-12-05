@@ -1,8 +1,19 @@
 import tkinter as tk
 import os
 from tkinter import messagebox
+import mysql.connector
+import admin
 
 folder = os.path.dirname(__file__)
+
+def GetConnection():
+    return mysql.connector.connect(
+        host='localhost',
+        db='db_vending',
+        user='root',
+        password='',
+        port=3306
+    )
 
 root = tk.Tk()
 root.title("Vending Machine Kel 1")
@@ -34,44 +45,38 @@ btn_uang.pack(side="left")
 lbl_saldo = tk.Label(tempat_uang, text="Saldo: Rp 0", font=("arial", 12, "bold"),fg="white", bg="blue")
 lbl_saldo.pack(pady=10)
 
-
 def layout_gambar(nama_file):
     path = os.path.join(folder, "Pict", nama_file)
     before = tk.PhotoImage(file=path)
     after = before.subsample(5, 5)
     return after
 
-daftar_produk = [
-   {"file": "air.png", "nama": "Air Mineral", "harga": 3000},
-    {"file": "nescafe.png", "nama": "Nescafe", "harga": 5000},
-    {"file": "pepsi.png", "nama": "Pepsi Blue", "harga": 6000},
-    {"file": "pillows.png", "nama": "Pillows", "harga": 2000},
-    {"file": "chikiballs.png","nama": "Chiki Balls", "harga": 2500},
-    {"file": "chitato.png", "nama": "Chitato", "harga": 3500},
-    {"file": "fanta.png", "nama": "Fanta", "harga": 5000},
-    {"file": "walens.png", "nama": "Walens", "harga": 4000},
-    {"file": "cheetos.png", "nama": "Cheetos", "harga": 3000},
-    
-    {"file": "yupi.png", "nama": "Permen Yupi", "harga": 7500},
-    {"file": "fruittea.png", "nama": "Fruittea", "harga": 4500},
-    {"file": "floridina.png", "nama": "Floridina", "harga": 3500},
-    {"file": "chitatoo.png", "nama": "Chitato Pedas", "harga": 5500},
-    {"file": "kusuka.png", "nama": "Kusuka", "harga": 3000},
-    {"file": "lite.png", "nama": "Lite","harga": 4000},
-    {"file": "milku.png", "nama": "Milku", "harga": 3500},
-    {"file": "c yogurt.png", "nama": "Cimory Yogurt","harga": 4500},
-    {"file": "coca cola.png", "nama": "Coca Cola","harga": 5500}, 
+daftar_produk = []
 
-     {"file": "drink yogurt.png", "nama": "Drink Yogurt",  "harga": 7500},
-    {"file": "momogi.png",   "nama": "Momogi",  "harga": 1500},
-    {"file": "pocari sweat.png", "nama": "Pocari Sweat",  "harga": 6500},
-    {"file": "yakult.png",   "nama": "Yakult", "harga": 2500},
-    {"file": "nescafe latte.png","nama": "Nescafe Latte",  "harga": 9000},
-    {"file": "pringles.png", "nama": "Pringles","harga": 8000},
-    {"file": "olatte.png", "nama": "Olatte", "harga": 3500},
-    {"file": "good day.png", "nama": "Good Day","harga": 4500},
-    {"file": "popcorn.png", "nama": "Popcorn","harga": 5500},
-]
+def crud_db():
+    global daftar_produk
+    daftar_produk.clear()
+    simpan_gambar.clear()
+
+    try:
+        conn = GetConnection()
+        cursor = conn.cursor()
+        cursor.execute("select nama, harga, nama_file from barang")
+        hasil_sql = cursor.fetchall()
+
+        for item in hasil_sql:
+            data_baru = {
+                "nama": item[0],
+                "harga": item[1],
+                "file": item[2]
+            }
+            daftar_produk.append(data_baru)
+
+        conn.close()
+        print("Berhasil menampilkan data")
+
+    except Exception as e:
+        messagebox.showerror("Error Database", f"gagal mengambil data: {e}")
 
 halaman_ini = 0
 saldo = 0
@@ -86,7 +91,6 @@ def tambah_uang():
     else:
         messagebox.showerror("Error", "Masukkan nominal angka yang benar!")
 
-
 def ganti_halaman(arah):
     global halaman_ini
     halaman_baru = halaman_ini + arah
@@ -96,6 +100,7 @@ def ganti_halaman(arah):
         return
     
     halaman_ini = halaman_baru
+    btn_page.config(text=f"page {halaman_ini +1}")
 
     tampilkan_etalase(halaman_ini)
 
@@ -129,7 +134,7 @@ def bayar():
         return
     
     tap_nomor = int(isi_layar)
-    index_barang = (halaman_ini * 9) + (tap_nomor - 1)
+    index_barang = (halaman_ini * 25) + (tap_nomor - 1)
     
     if index_barang < 0 or index_barang >= len(daftar_produk):
         messagebox.showwarning("Produk tidak tersedia")
@@ -154,13 +159,22 @@ def bayar():
 
 simpan_gambar = {}
 
-etalase = tk.Frame(frame_kiri, bg="white")
+etalase = tk.Frame(frame_kiri, bg="#F40009")
 etalase.pack(fill="both", expand=True)
 
 def tampilkan_etalase(nomor_halaman):
 
     for widget in etalase.winfo_children():
         widget.destroy()
+
+    for i in range(5):
+        etalase.grid_columnconfigure(i, weight=1)
+        
+    etalase.grid_rowconfigure(0, weight=1)
+    etalase.grid_rowconfigure(1, weight=1)
+    etalase.grid_rowconfigure(2, weight=1)
+    etalase.grid_rowconfigure(3, weight=1)
+    etalase.grid_rowconfigure(4, weight=1)
 
     indeks_awal = nomor_halaman * 25
     indeks_akhir = indeks_awal + 25
@@ -242,14 +256,29 @@ btn_prev = tk.Button(Kontrol, text="<", font=("arial", 12, "bold"), bg="orange")
 btn_prev.config(command=lambda: ganti_halaman(-1)) 
 btn_prev.grid(row=5, column=0, padx=2, pady=5, sticky="ew", ipady=5)
 
-lbl_hal = tk.Label(Kontrol, text="PAGE", font=("arial", 10))
-lbl_hal.grid(row=5, column=1, padx=2, pady=5)
+btn_page = tk.Button(Kontrol, text="PAGE", font=("arial", 10))
+
+def panggil_admin():
+    admin.open_admin(root)
+
+btn_page.config(command=panggil_admin)
+btn_page.grid(row=5, column=1, padx=2, pady=5, sticky="ew", ipady=5)
 
 btn_next = tk.Button(Kontrol, text=">", font=("arial", 12, "bold"), bg="orange")
 
 btn_next.config(command=lambda: ganti_halaman(1))
-btn_next.grid(row=5, column=2, padx=2, pady=5, sticky="ew", ipady=5)
+btn_next.grid(row=5, column=2, padx=5, pady=5, sticky="ew", ipady=5, ipadx=5)
 
+btn_refresh = tk.Button(Kontrol, text="⟳", font=("arial", 20), bg="lightblue")
+def aksi_refresh():
+    crud_db()
+    tampilkan_etalase(halaman_ini)
+    messagebox.showinfo("Info", "Data Etalase Diperbarui!")
+
+btn_refresh.config(command=aksi_refresh)
+btn_refresh.grid(row=6, column=0, sticky="w", padx=2)
+
+crud_db()
 tampilkan_etalase(halaman_ini)
 
 root.mainloop()
