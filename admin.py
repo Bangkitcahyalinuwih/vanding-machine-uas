@@ -74,8 +74,78 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
 
         except mysql.connector.Error as err:
             mb.showerror("Error DB", f"Gagal memperbarui data: {err}", parent=edit_popup)
+
+    # FUNGSI HAPUS
+def hapus_barang(id, dashboard):
+    # 1. Konfirmasi dulu agar tidak terhapus tidak sengaja
+    tanya = mb.askyesno("Konfirmasi Hapus", "Yakin ingin menghapus barang ini?", parent=dashboard)
+    
+    if tanya:
+        try:
+            conn = GetConnection()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM barang WHERE id=%s", (id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+
+            mb.showinfo("Sukses", "Barang berhasil dihapus", parent=dashboard)
+            dashboard.destroy()
+            menu_dashboard()
             
-    #tombol
+        except mysql.connector.Error as err:
+            mb.showerror("Error", f"Gagal menghapus: {err}", parent=dashboard)
+            
+def tambah_barang(dashboard):
+
+    add_popup = tk.Toplevel(dashboard)
+    add_popup.title("Tambah Barang Baru")
+    add_popup.geometry("300x300")
+    
+    frData = tk.Frame(add_popup, padx=10, pady=10)
+    frData.pack(fill='both', expand=True)
+
+    tk.Label(frData, text="Nama Barang").grid(row=0, column=0, sticky='w')
+    nama_entry = tk.Entry(frData, width=30)
+    nama_entry.grid(row=0, column=1, pady=5)
+
+    tk.Label(frData, text="Harga").grid(row=1, column=0, sticky='w')
+    harga_entry = tk.Entry(frData, width=30)
+    harga_entry.grid(row=1, column=1, pady=5)
+
+    tk.Label(frData, text="Nama File Gambar").grid(row=2, column=0, sticky='w')
+    tk.Label(frData, text="(cth: baru.png)", font=("arial", 8)).grid(row=3, column=0, sticky='w')
+    file_entry = tk.Entry(frData, width=30)
+    file_entry.grid(row=2, column=1, pady=5)
+
+    def aksi_tambah():
+        nama = nama_entry.get()
+        harga = harga_entry.get()
+        file_gbr = file_entry.get()
+
+        if not nama or not harga.isdigit() or not file_gbr:
+            mb.showwarning("Error", "Data tidak lengkap / Harga harus angka", parent=add_popup)
+            return
+
+        try:
+            conn = GetConnection()
+            cursor = conn.cursor()
+            query = "INSERT INTO barang (nama, harga, nama_file) VALUES (%s, %s, %s)"
+            cursor.execute(query, (nama, int(harga), file_gbr))
+            conn.commit()
+            conn.close()
+
+            mb.showinfo("Sukses", "Barang berhasil ditambahkan!", parent=dashboard)
+            add_popup.destroy()
+            
+            dashboard.destroy()
+            menu_dashboard()
+
+        except mysql.connector.Error as err:
+            mb.showerror("Error DB", f"Gagal tambah: {err}", parent=add_popup)
+
+    tk.Button(add_popup, text="Simpan Data", bg="blue", fg="white", command=aksi_tambah).pack(pady=20)
+
     frButton = tk.Frame(edit_popup)
     frButton.pack(pady=10)
     tk.Button(frButton, text="Simpan", command=simpan_barang).pack(side=tk.LEFT, padx=5)
@@ -117,6 +187,11 @@ def menu_dashboard():
     #frame untuk menampilkan barang
     item_frame = tk.Frame(dashboard)
     item_frame.pack(pady=10, padx=10, fill='x')
+
+    # TOMBOL TAMBAH BARANG (CREATE)
+    btn_add = tk.Button(dashboard, text="+ Tambah Barang Baru", bg="blue", fg="white", font=("arial", 10, "bold"),
+                        command=lambda: tambah_barang(dashboard))
+    btn_add.pack(pady=(10, 0), anchor="e", padx=20) # anchor="e" biar di kanan
 
     #frame untuk navigasi
     nav_frame = tk.Frame(dashboard, bg="lightgray")
@@ -179,6 +254,10 @@ def menu_dashboard():
                     btn_edit = tk.Button(item_frame, text="Edit", width=10, 
                                  command=lambda id=item_id, nama=nama_barang, harga=harga_barang, files=file_gambar, dash=dashboard: edit_barang(id, nama, harga, files, dash))
                     btn_edit.grid(row=row_num, column=3, padx=10, pady=5)
+
+                    btn_hapus = tk.Button(item_frame, text="Hapus", width=8, bg="red", fg="white",
+                                 command=lambda id=item_id, dash=dashboard: hapus_barang(id, dash))
+                    btn_hapus.grid(row=row_num, column=4, padx=5, pady=5)
 
                     row_num += 1
         # total_halaman

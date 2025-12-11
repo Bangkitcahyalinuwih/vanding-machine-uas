@@ -60,17 +60,17 @@ CREATE TABLE `barang` (
 --
 
 INSERT INTO `barang` (`id`, `nama`, `harga`, `nama_file`, `stok`) VALUES
-(1, 'le mineral', 3000, 'air.png', 999),
-(2, 'nescafe', 7000, 'nescafe.png', 999),
-(3, 'pepsi', 6000, 'pepsi.png', 999),
-(4, 'pillows', 2000, 'pillows.png', 999),
-(5, 'chikibalss', 3000, 'chikiballs.png', 999),
-(6, 'chitato', 4000, 'chitato.png', 999),
-(7, 'fanta', 5000, 'fanta.png', 999),
-(8, 'wallens', 5000, 'walens.png', 999),
-(9, 'cheetos', 1000, 'cheetos.png', 999),
-(10, 'Permen Yupi', 7500, 'yupi.png', 999),
-(11, 'Fruittea', 4500, 'fruittea.png', 999);
+('le mineral', 3000, 'air.png', 999),
+('nescafe', 7000, 'nescafe.png', 999),
+('pepsi', 6000, 'pepsi.png', 999),
+('pillows', 2000, 'pillows.png', 999),
+('chikibalss', 3000, 'chikiballs.png', 999),
+('chitato', 4000, 'chitato.png', 999),
+('fanta', 5000, 'fanta.png', 999),
+('wallens', 5000, 'walens.png', 999),
+('cheetos', 1000, 'cheetos.png', 999),
+('Permen Yupi', 7500, 'yupi.png', 999),
+('Fruittea', 4500, 'fruittea.png', 999);
 
 --
 -- Indexes for dumped tables
