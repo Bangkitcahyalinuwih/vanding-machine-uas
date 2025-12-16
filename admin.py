@@ -10,7 +10,7 @@ import os
 
 folder = os.path.dirname(__file__)
 
-main_app = None
+# main_app = None
 
 def GetConnection():
     return mysql.connector.connect(
@@ -18,7 +18,7 @@ def GetConnection():
         db='db_vending',
         user='root',
         password='',
-        port=3306
+        port=3307
     )
 
 # pop up edit
@@ -26,7 +26,7 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
     edit_popup = tk.Toplevel(dashboard)
     edit_popup.title("Edit Barang")
     edit_popup.geometry("300x300")
-    edit_popup.grab_set()
+    edit_popup.grab_set() #agar focus ke eidt
 
     frData = tk.Frame(edit_popup, padx=10, pady=10)
     frData.pack(fill='both', expand=True)
@@ -37,7 +37,7 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
     nama_entry.insert(0, nama_lama)
     nama_entry.grid(row=0, column=1, padx=5, pady=5)
 
-    tk.Label(frData, text="Barang Baru").grid(row=2, column=0, padx=5, pady=5, sticky='w')
+    tk.Label(frData, text="Barang Baru" ).grid(row=2, column=0, padx=5, pady=5, sticky='w')
     file_entry = tk.Entry(frData, width=30)
     file_entry.insert(0, file_lama)
     file_entry.grid(row=2, column=1, padx=5, pady=5)
@@ -78,7 +78,7 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
 
     # FUNGSI HAPUS
 def hapus_barang(id, dashboard):
-    # 1. Konfirmasi dulu agar tidak terhapus tidak sengaja
+    #Konfirmasi dulu agar tidak terhapus tidak sengaja
     tanya = mb.askyesno("Konfirmasi Hapus", "Yakin ingin menghapus barang ini?", parent=dashboard)
     
     if tanya:
@@ -339,9 +339,9 @@ def menu_dashboard():
          root.password_entry.delete(0, tk.END)
          root.username_entry.focus_set()
          dashboard.destroy()
-         root.deiconify()
+        #  root.deiconify() ##menampilkan kembali yang disembunyikan
          mb.showinfo("Logout", "Anda telah logout dari sistem", parent=root)
-    btn_logout = tk.Button(dashboard, text="Logout", command=logout)
+    btn_logout = tk.Button(dashboard,  text="Logout", command=logout)
     btn_logout.pack(pady=10)
 
 
