@@ -18,7 +18,7 @@ def GetConnection():
         db='db_vending',
         user='root',
         password='',
-        port=3306
+        port=3307
     )
 
 # pop up edit
@@ -48,6 +48,8 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
     harga_entry.insert(0, harga_lama)
     harga_entry.grid(row=1, column=1, padx=5, pady=5)
 
+
+
     #fungsi simpan
     def simpan_barang():
         nama_baru = nama_entry.get()
@@ -75,6 +77,8 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
 
         except mysql.connector.Error as err:
             mb.showerror("Error DB", f"Gagal memperbarui data: {err}", parent=edit_popup)
+
+    tk.Button(edit_popup, text="Update Data", bg="blue", fg="white", command=simpan_barang).pack(pady=20)
 
     # FUNGSI HAPUS
 def hapus_barang(id, dashboard):

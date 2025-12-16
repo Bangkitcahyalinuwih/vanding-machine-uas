@@ -12,7 +12,7 @@ def GetConnection():
         db='db_vending',
         user='root',
         password='',
-        port=3306
+        port=3307
     )
 
 root = tk.Tk()
@@ -29,7 +29,7 @@ frame_kanan = tk.Frame(wadah_utama, bg="lightgray", width=350)
 frame_kanan.pack(side="right", fill="y", padx=10, pady=10)
 frame_kanan.pack_propagate(False)
 
-tempat_uang = tk.Frame(frame_kanan, bg="lightgray",)
+tempat_uang = tk.Frame(frame_kanan, bg="lightblue",)
 tempat_uang.pack(pady=20, fill="x")
 tk.Label(tempat_uang, text="Masukkan Uang anda:", bg="#FEFEFE").pack(side="left", padx=10)
 
