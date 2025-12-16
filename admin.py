@@ -18,7 +18,7 @@ def GetConnection():
         db='db_vending',
         user='root',
         password='',
-        port=3307
+        port=3306
     )
 
 # pop up edit
@@ -79,6 +79,11 @@ def edit_barang(id, nama_lama, harga_lama, file_lama, dashboard):
             mb.showerror("Error DB", f"Gagal memperbarui data: {err}", parent=edit_popup)
 
     tk.Button(edit_popup, text="Update Data", bg="blue", fg="white", command=simpan_barang).pack(pady=20)
+
+    frButton = tk.Frame(edit_popup)
+    frButton.pack(pady=10)
+    tk.Button(frButton, text="Simpan", command=simpan_barang).pack(side=tk.LEFT, padx=5)
+    tk.Button(frButton, text="Batal", command=edit_popup.destroy).pack(side=tk.LEFT, padx=5)
 
     # FUNGSI HAPUS
 def hapus_barang(id, dashboard):
@@ -151,10 +156,10 @@ def tambah_barang(dashboard):
 
     tk.Button(add_popup, text="Simpan Data", bg="blue", fg="white", command=aksi_tambah).pack(pady=20)
 
-    frButton = tk.Frame(edit_popup)
+    frButton = tk.Frame(add_popup)
     frButton.pack(pady=10)
-    tk.Button(frButton, text="Simpan", command=simpan_barang).pack(side=tk.LEFT, padx=5)
-    tk.Button(frButton, text="Batal", command=edit_popup.destroy).pack(side=tk.LEFT, padx=5)
+    tk.Button(frButton, text="Simpan", command=aksi_tambah).pack(side=tk.LEFT, padx=5)
+    tk.Button(frButton, text="Batal", command=add_popup.destroy).pack(side=tk.LEFT, padx=5)
                 
 
 def menu_dashboard():
