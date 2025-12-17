@@ -1,4 +1,5 @@
-## TEGAR RIDWAN
+## user: admin
+## password: admin123
 
 import tkinter as tk
 from tkinter import BOTH, LEFT, Button, messagebox as mb
