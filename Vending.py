@@ -33,14 +33,14 @@ tempat_uang = tk.Frame(frame_kanan, bg="lightgray",)
 tempat_uang.pack(pady=20, fill="x")
 tk.Label(tempat_uang, text="Masukkan Uang anda:", bg="#FEFEFE").pack(side="left", padx=10)
 
-frame_input = tk.Frame(tempat_uang, bg="lightgray")
+frame_input = tk.Frame(tempat_uang, bg="green")
 frame_input.pack(pady=5)
 
-entry_uang = tk.Entry(frame_input, width=10)
+entry_uang = tk.Entry(frame_input, width=20)
 entry_uang.pack(side="left", padx=5)
 
 btn_uang = tk.Button(frame_input, text="Masukkan", bg="lightblue", command=lambda: tambah_uang())
-btn_uang.pack(side="left")
+btn_uang.pack(side="right")
 
 lbl_saldo = tk.Label(tempat_uang, text="Saldo: Rp 0", font=("arial", 12, "bold"),fg="white", bg="blue")
 lbl_saldo.pack(pady=10)
@@ -50,7 +50,7 @@ def layout_gambar(nama_file):
     before = tk.PhotoImage(file=path)
     after = before.subsample(5, 5)
     return after
-
+#batas poo
 daftar_produk = []
 
 def crud_db():
@@ -90,13 +90,14 @@ def tambah_uang():
         entry_uang.delete(0, tk.END)
     else:
         messagebox.showerror("Error", "Masukkan nominal angka yang benar!")
-
+        entry_uang.delete(0, tk.END)
+#batas silit
 def ganti_halaman(arah):
     global halaman_ini
     halaman_baru = halaman_ini + arah
     if halaman_baru < 0:
         return
-    if (halaman_baru * 9) >= len(daftar_produk):
+    if (halaman_baru * 25) >= len(daftar_produk):
         return
     
     halaman_ini = halaman_baru
@@ -282,3 +283,4 @@ crud_db()
 tampilkan_etalase(halaman_ini)
 
 root.mainloop()
+#stephen
